@@ -1,0 +1,327 @@
+---
+title: 'Estimating the Marginal Revenue Product of the Quarterback: A Model of the NFL Labor Market'
+author: "Eli Metzner"
+fontsize: 12pt
+header-includes:
+    - \setlength{\parindent}{1.25cm}
+    - \usepackage{setspace}\doublespacing
+    - \AtBeginDocument{\let\maketitle\relax}
+    - \usepackage{amsmath}
+    - \usepackage{indentfirst}
+date: "12/19/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+\begin{singlespace}
+{\centering \small Eli Metzner \newline 12/19/18 \newline Econ 438 Paper 3} \newline \newline \newline
+\begin{center}
+{\Large {Estimating the Marginal Revenue Product of the Quarterback: A Model of the NFL Labor Market}}
+\end{center}
+\end{singlespace}
+
+## Introduction
+
+The National Football League is the most popular professional sports league in the United States, both by viewership numbers and yearly revenue, and these numbers continue to grow each year despite the player-safety and political controversies the league has recently become involved in. The NFL’s 32 teams each operate as separate business entities with their own balance sheets, accruing revenue based on fan attendance and merchandise sales (although some proportion of the total revenue of the league is shared among the teams in a standard revenue sharing agreement similar to that of Major League Baseball or the National Basketball Association) (Norman, 2018). Generally, the quarterback is viewed as one of the most important drivers of success on each team, as the league has shifted in recent years toward an emphasis on offense and passing specifically. This trend has resulted in a monetary premium being placed on quarterback salaries -- in fact, as of 2018, four of the top 10 salaries in the league belong to quarterbacks, out of a possible 22 positions (Pro Football Reference, 2018). Even though football is much more of a "team sport" than baseball, for example, where individual contributions are much more easily quantified, the contributions of quarterbacks toward a team's success are relatively straightforward to measure given their role as the main offensive drivers of each team. Interestingly, though, advanced analytics capable of quantifying individual player performance have not emerged in football to the same extent as other sports such as baseball and basketball. \par
+
+In this work, we set out to determine the marginal revenue product of the quarterback, assuming that quarterbacks produce wins based on their statistical performance, and wins determine the yearly revenue of each team. Using a two-stage model built based on data from the past 10 seasons (2008-2017), we will show that a set of quarterback performance statistics is predictive of the wins added by each quarterback per season, from which revenue per season can then also be predicted using an autoregressive framework. Using the two stages of this model, we predict the marginal revenue product of the 32 starting quarterbacks for the 2018 season, comparing predicted values to real salaries to illustrate the presence or absence of the "quarterback premium" in 2018 and determine whether the NFL labor market exists in a perfectly competitive equilibrium. \par
+
+## Background
+
+Unlike in other sports such as baseball, the literature related to quantifying individual player performance and wins added in football is relatively sparse. Baseball (and, for that matter, basketball) lend themselves well to measuring the marginal effects of a given player, as generally only one player catalyzes each offensive play (a hit, or a home run, or a made three-pointer, etc. only depends on the skill of the batter or the shooter), so much literature already exists on quantifying player performance in these sports and modeling wins added based on aggregate individual performance. Statistician Bill James made this approach famous with his Sabermetric statistics in baseball, which led to today's Wins Above Replacement statistic, which albeit not straightforward to calculate, has been praised for its fit and reliability in assessing individual player "win shares" (James and Henzler 2002). \par
+
+The WAR algorithm is baseball-specific, though, and although some recent work has attempted to apply this general approach to the NFL quarterback, examples are few and far between. Hunsberger et al. (2014) apply a two-stage wins-revenue model to quarterbacks in college football, using game-level data and ESPN’s aggregate QBR statistic to estimate a probit model predictive of the win probability per game added by a given quarterback based on their QBR alone. Extrapolating the game-level effect through an entire season, they arrive at the wins added via the net change in win probability and then estimate the marginal revenue product of each quarterback via a very simple revenue-wins model that regresses revenue on wins and only controls for local market factors, ignoring fan base stickiness, exogenous league popularity growth, or other factors that might influence year-on-year revenue trends (Hunsberger et al. 2014). While this work provides a sound framework, the QBR statistic is not a very meaningful indicator of quarterback performance for the purposes of a predictive model due to the subjective nature of its calculation – it relies on human judgement of certain game situations – and the lack of transparency in ESPN's proprietary QBR algorithm. Since ESPN does not release the QBR calculation algorithm publicly, QBR is not reproducible from available data, obviously limiting its usefulness in a wins-predictive model. \par
+
+The two-stage approach of Hunsberger et al., while theoretically sound, has not yet been attempted for the NFL. No existing literature has attempted to model NFL team revenue based on quarterback performance or team success, though recent work has investigated the "positional win share" of the quarterback in general and made progress in quantifying the effect on wins of individual quarterback performance. Hughes et al. measure the effect on team wins per season of the substitution of replacement-level backup players at each position due to injury or suspension of the respective starters. They claim that this value, which they call "positional Wins Above Replacement" in a nod to James's sabermetric baseball statistic, is representative of the win share of each position, on average, across the league. Perhaps not surprisingly, they find that the quarterback has by far the highest positional WAR, as a starting quarterback's injury or suspension results in a net loss of almost 5 total wins, compared to only 0.14 for running backs, for example, and an effect close to 0 for defensive positions (Hughes et al. 2015). While Hughes et al. clearly establish that the quarterback position is responsible for a large fraction of win share in general, they do not take the obvious next step and attempt to model the individual win share of a given quarterback based on performance metrics. \par
+
+The only literature devoted to modeling the actual wins added by individual NFL quarterbacks based on raw statistics, Yurko et al. build a multilevel logit model utilizing play-by-play data to predict the expected value of points added based on quarterback performance in plays in which they are involved. By limiting the play-by-play data to plays in which the quarterback is the main offensive driver, the authors claim they isolate the marginal effect of quarterback performance on expected points. The next stage of their model translates expected points into win probability added per play via another logit model -- the authors note the absence of any fixed effects in this model, as they decide to ignore relative non-QB differences in team strength or playing style. Similar to Hunsberger et al., Yurko et al. extrapolate the win probability added through a season and normalize to the league average, arriving at a WAR value for each quarterback. This approach seems reasonable, albeit highly technical and not very illustrative of the relationship between aggregate quarterback performance and wins: as opposed to season-level quarterback statistics, play-by-play data is highly granular and not readily interpretable without the aid of the model (Yurko et al. 2015). \par
+
+## Theory
+
+Given the limitations of the previous literature, we seek to develop our own theoretical framework to model the output of the quarterback and the revenue for which he is responsible. In traditional microeconomics, the perfectly competitive labor market is defined as follows: each firm has a production function $q = f(K,L)$, which converts inputs of capital and labor into an output $q$, and that output determines the revenue $p \cdot f(K,L)$ of the firm, which is a price-taker at price $p$. The marginal product $MP = \frac{\partial f}{\partial L}$ represents the output added by one additional worker, while the marginal revenue $MR = p \frac{\partial f}{\partial L}$ is the additional revenue gained by producing one unit of output. The marginal cost of each worker is equal to the wage $w$ paid to them by the firms, while the marginal revenue of a given worker is defined as the marginal revenue product, $MRP = MP \cdot MR$. The equilibrium for the labor market implies that the marginal cost per worker will be equal to their marginal revenue product: $w = MRP$. From this basic theory, we derive a powerful result: in a perfectly competitive labor market, each worker is compensated at his or her marginal revenue product.\par
+
+Now we apply this basic microeconomic theory to the NFL. We will assume that each team is a firm, which produces an output of wins as a function of inputs: quarterback performance, non-quarterback performance, and unobserved team-level and year-level variation in playing and coaching style, market size, and other factors. Therefore, the production function of the team as a firm is modeled as follows: \vspace{-1cm}
+
+$$ W_i = f(QB, nonQB) = \beta \cdot \bf{QB_i} + \gamma \cdot \bf{NonQB_i} + \phi_i +  \tau_i + \epsilon_i $$
+
+where $\beta$ and $\gamma$ are vectors of coefficients, $\bf{QB_i}$ is a vector of quarterback performance statistics, $\bf{NonQB_i}$ is a vector of non-QB team performance statistics, and $\tau_i$ and $\phi_i$ are team and year fixed effects. \par
+
+By definition of the marginal product, we have that the marginal product of the quarterback is $MP = \frac{\partial f}{\partial \bf{QB}} = \beta$. But the marginal product by its traditional definition -- the additional output produced by one more unit of labor – has no meaning in football, where only one quarterback at a time can be on the field. Instead, we extend the definition of the marginal product to be the fraction of output for which a quarterback is directly responsible through his performance, holding all other team-level factors constant. While $\beta$ is a vector of the marginal effects on wins for each measure of quarterback performance, it is more illustrative to consider $\beta \cdot \bf{QB}$, the marginal effect of the quarterback’s quantified performance measures on his team’s wins. To refer to this aggregate effect, we will use “marginal product” and “wins added” interchangeably. It is important to note and remember the slight deviation from the original microeconomic definition, though the intuition is the same: our marginal product is the effect on output of “adding” a quarterback into the team's production function.\par
+
+Next, we move to the second stage of our model, the marginal revenue function. NFL teams are clearly not price takers, so we will have to be slightly more creative than with the wins model here. Our first assumption with regard to revenue is a basic one: team revenue is directly related to team output (albeit in the previous season, as revenues are reported at the beginning of each season). NFL teams generate team-specific revenue via ticket sales, merchandise, stadium concessions, and sponsorships (TV deals are league-wide), and it is plausible to assume that ticket sales in 2018 depend on team output in 2017. In reality, revenue might be forward-looking (fans buy tickets based on expectation of future wins), but given the unpredictability of the NFL we will discount that theory and claim that if a team does well in 2017, more fans will want to buy tickets in 2018. Next, we assume that NFL fan bases are sticky, i.e. an outlier low-output year for a team does not erase all of the revenue for that team in the next season as some combination of output in the past several seasons determines team revenue. To account for this, we will add an autoregressive term to the revenue model and claim that revenue in 2017 depends partially on revenue in 2016, etc, as well as on two-year-lagged wins in addition to past-season wins. To control for league-wide year-on-year revenue growth, we consider each team’s revenue as a percentage of the league total for the given year. This should isolate the marginal effect of wins on a team’s real revenue relative to the rest of the league, as desired. The revenue model is estimated as follows: \vspace{-1cm}
+
+$$ RevPct_{it} = \delta_1 W_{it-1} + \delta_2 W_{it-2} + \eta RevPct_{it-1} + \xi_i + \epsilon_i $$
+
+where $RevPct$ is a given team's share of league total revenue in year $t$, $W$ is team wins in year $t-1$, and $\xi_i$ is a vector of population and income controls in each team's metropolitan statistical area. Ideally, the autoregressive term will pick up on any unobserved population or income trends, so $\xi_i$ may not be necessary. This revenue function is a basic linear function of output W, so the marginal revenue in percentage-point terms relative to the league total is $MR = \frac{\partial RevPct}{\partial W} = \delta_1$. Therefore, the marginal revenue product of each quarterback, $MRP = MP \cdot MR$, is given in our model as $MRP = \beta\bf{QB} \cdot \delta_1$. \par
+
+We will estimate each 2018 starting quarterback’s MRP via this two-stage model and compare it to his wage (yearly salary) in order to illustrate the presence or absence of a "quarterback premium" in 2018. From this comparison, we should also be able to determine whether or not the NFL is a perfectly competitive labor market, as in a competitive equilibrium most MRPs would be generally close to values real wages. Deviations in either direction from this equilibrium would inform an analysis of the NFL labor market as it deviates from perfect competition, perhaps in a monopsony-like buyers’ market in which revenue-generating teams have outsize market power over relatively homogenous quarterbacks. 
+
+## Models
+
+We now estimate the team-level production function as derived above. We build the model on data from the past 10 years, the 2008-2017 seasons, as this timeframe is a rough estimate of the period in which the pass-heavy offensive trend has been most prevalent and therefore our estimates of quarterback win share are most accurate. For the vector of quarterback statistics $\bf{QB_i}$, we start with the statistics traditionally used in aggregate measures of quarterback performance: passing yards, completions, touchdowns, and interceptions. In recent years, the emergence of “mobile quarterbacks” such as Dak Prescott have highlighted the importance of quarterback rushing as well, so we add rush touchdowns and fumbles as measures of quarterback performance as well. Rush yards might seem an obvious statistic to add, but it is endogenous to wins, as the “quarterback kneel,” used to run out the clock at the end of a game essentially already won, is officially counted as a negative rushing yard for a given quarterback. We also normalize these statistics to percentages per pass or rush attempt to reduce the effect of sampling error. This also allows us to predict the output of each 2018 quarterback even with incomplete data (assuming each quarterback continues playing at his current pace). For the vector of non-QB statistics, we choose two easily measurable factors that are exogenous to quarterback performance but, we hypothesize, have a significant effect on team output: team rush yards and defensive turnovers. These non-QB performance measures should allow for non-passing sources of offensive output and defensive efficiency, respectively, to contribute to team output, possibly avoiding the trap of giving the quarterback “too much credit” for wins added. Because the effects of coaching decisions, play-calling and play style, and other factors such as offensive line and backfield strength vary across teams, we add team and year fixed effects to control for unobserved team-level and time heterogeneity. We also assume a quadratic dependence of quarterback performance on age, similarly to previous work which assumes a player’s “prime” is somewhere in the middle of his career, with success increasing toward this age at the beginning of a career and decreasing as a player ages thereafter (Fair et al. 2008). Therefore, the first stage of our model is specified as follows: \vspace{-1cm}
+
+$$ W_i = \beta_1Yd_i + \beta_2Cmp_i + \beta_3TD_i + \beta_4Int_i + \beta_5RuTD_i + \beta_6RuFmb_i + \beta_7Age^2$$ \vspace{-1cm}
+$$ + \gamma_1TmRuYd + \gamma_2DefTO + \tau_i +\phi_i + \epsilon_i$$
+
+where i indexes all 32 NFL teams, $Yd_i$ is net yards per attempt, $Cmp_i$ is pass completions per attempt, $TD_i$ is touchdowns per attempt, $Int_i$ is interceptions per attempt, $RuTD$ is rush touchdowns per attempt, $RuFmb$ is fumbles per rush attempt, and $Age$ gives the quarterback’s age in years. $TmRuYd$ represents team rush yards, and $DefTO$ is total defensive turnovers. $\tau_i$ and $\phi_i$ represent team and year fixed effects as described above. The marginal product of each quarterback (by our previous definition) is then given as $MP_i = \beta \cdot \bf{QB_i}$ $= \beta_1Yd_i + \beta_2Cmp_i + \beta_3TD_i + \beta_4Int_i + \beta_5RuTD_i + \beta_6RuFmb_i + \beta_7Age^2$. To ensure exogeneity and verify robustness, we run four versions of the model: (1) is the full version specified above; (2) with $\gamma = 0$, excluding non-QB effects; (3) with only offensive non-QB effects; and (4) with only defensive non-QB effects. If our model is robust and the non-QB effects are strictly exogenous, the coefficients on QB performance should stay consistent in terms of value and significance throughout all versions of the model. \par
+
+The second stage of the model estimates the marginal revenue gained by a team via an additional win. We first test a basic version of this model (1), omitting the autoregressive term and instead controlling for team-level differences in market size via the population and per-capita income of the metropolitan statistical area in which each team is located: \vspace{-1cm}
+
+$$ RevPct_{it} = \alpha + \delta_1W_{it-1} + \delta_2Pop_i + \delta_3Ypc_i + \epsilon_i $$
+
+where $RevPct_it$ is the percentage share of league total revenue of team $i$ in year $t$, $W$ represents wins, $Pop$ is the log of population in the MSA of team i, and $Ypc$ is the log of per-capita income in the MSA of team i. \par
+
+The autoregressive models, which we expect to have substantially better fit, are estimated as follows, with the same variable names as above. \vspace{-1cm}
+
+$$ RevPct_it = \alpha + \delta_1W_{it-1} + \delta_2W_{it-2} + \eta_1RevPct_{it-1} + \epsilon_i $$
+
+We omit the population and income controls as the autoregressive term should take those into account. Clearly, the error terms in this model will be serially correlated, and heteroscedasticity on the team level is also of concern. Therefore, we apply the Newey-West estimator to the variance-covariance matrix to correct for autocorrelation, and additionally cluster the standard errors at the team level. As a robustness check, we run this model twice, omitting (2) and including (3) the two-year lagged wins. The marginal revenue as defined above -- the additional revenue gained from one win, holding all other factors constant and expressed in percentage points of the yearly league total -- is simply $MR = \frac{\partial RevPct}{\partial W} = \delta_1$. Therefore, the marginal revenue product is the product of each quarterback's predicted wins added $\beta \cdot \bf{QB}$ and the marginal revenue $\delta_1$. \par
+
+## Results
+
+Tables 1 and 2 contain estimation results for each stage of our combined model, and Table 3 contains predicted wins added and marginal revenue product for each 2018 starting quarterback, as well as real 2018 salaries for comparison. For prediction, the full version (1) of the wins model was used to generate the marginal product of each quarterback, and the double-lagged revenue model (3) was used to find marginal revenue. The marginal revenue product is then simply the product of quarterback wins added and marginal revenue, $MRP_i = \beta\bf{QB_i} \cdot \delta_1$. A scatter plot of marginal revenue product vs. real 2018 salary is included after Table 3. \newpage
+
+```{r echo=FALSE, message = FALSE, warning=FALSE, results = 'asis'}
+library(tidyverse)
+library(readxl)
+library(stargazer)
+library(lfe)
+library(plm)
+library(sandwich)
+
+rm(list=ls())
+setwd('/Users/Eli 1/Dropbox/Documents/yale/junior/ECON 438/paper 3')
+
+getWinsAdded = function(df, model) {
+  wins = 0
+  for (i in 1:length(model$coefficients[1:7,])) {
+    stats = df %>%
+      pull(rownames(model$coefficients)[i])
+    pred = model$coefficients[i] * stats
+    wins = wins + pred
+  }
+  return(wins)
+}
+
+getRevAdded = function(wins) {
+  avgRevGR = 0.08388273
+  Rev18Total = 12078*(1+avgRevGR)
+  RevShare = 0.008*0.01*Rev18Total*wins
+  return(RevShare)
+}
+
+df0 = read_excel('438p3passing.xlsx', sheet = 1)
+for (i in 2:10)
+  df0 = rbind(df0, read_excel('438p3passing.xlsx', sheet = i))
+dfQB = df0 %>%
+  rename(player = X__1) %>%
+  separate(player, sep = "\\\\", into = c('name', 'code')) %>%
+  select(-c(Rk, name)) %>%
+  separate(QBrec, into = c('W', 'L', 'T')) %>%
+  select(c(code, Tm, Age, W, `NY/A`, `Cmp%` , `TD%` , `Int%`, YR, Pos)) %>%
+  filter(Pos == 'QB') %>%
+  select(-Pos) %>%
+  rename(Cmp = `Cmp%`, Yd = `NY/A`, TD = `TD%`, Int = `Int%`) %>%
+  mutate(Tm = str_replace_all(Tm, 'LAC', 'SDG')) %>%
+  mutate(Tm = str_replace_all(Tm, 'LAR', 'STL'))
+  
+dfRush0 = read_excel('438p3rushing.xlsx', sheet = 1)
+for (j in 2:10) 
+  dfRush0 = rbind(dfRush0, read_excel('438p3rushing.xlsx', sheet = j))
+dfRush1 = dfRush0 %>%
+  separate(Player, sep = "\\\\", into = c('name', 'code')) %>%
+  select(-name, -Rk) %>%
+  rename_if(c(rep(F,4),rep(T,9), F), function(x) return(str_c('Rush', x)))
+
+dfQBRush = dfRush1 %>%
+  filter(Pos == 'QB') %>%
+  transmute(code = code,
+            Tm = str_replace_all(Tm, 'LAC', 'SDG'),
+            Tm = str_replace_all(Tm, 'LAR', 'STL'),
+            YR = YR,
+            RuYd = RushYds/RushAtt,
+            RuTD = RushTD/RushAtt * 100,
+            RuFmb = RushFmb/RushAtt * 100)
+
+dfTmRush = dfRush1 %>%
+  group_by(Tm, YR) %>%
+  summarise(TmRuYd = sum(RushYds)) %>%
+  filter(Tm != '2TM' & Tm != '3TM')
+
+dfDef0 = read_excel('438p3defense.xlsx', sheet = 1)
+for (k in 2:10)
+  dfDef0 = rbind(dfDef0, read_excel('438p3defense.xlsx', sheet = k))
+dfDef1 = dfDef0 %>%
+  select(Tm, PF, TO, YR) %>%
+  rename(DefTO = TO)
+
+stats = inner_join(dfQB, dfQBRush, by = c('code', 'YR', 'Tm')) %>%
+  inner_join(dfDef1, by = c('Tm', 'YR')) %>%
+  inner_join(dfTmRush, by = c('Tm', 'YR'))
+
+modelWins0 = felm(W ~ Yd + Cmp + TD + Int + RuTD + RuFmb + Age**2 | factor(Tm) + factor(YR), 
+                  data = stats)
+modelWins1 = felm(W ~ Yd + Cmp + TD + Int + RuTD + RuFmb + Age**2 + TmRuYd | factor(Tm) + factor(YR),
+                  data = stats)
+modelWins2 = felm(W ~ Yd + Cmp + TD + Int + RuTD + RuFmb + Age**2 + DefTO | factor(Tm) + factor(YR),
+                  data = stats)
+modelWinsTotal = felm(W ~ Yd + Cmp + TD + Int + Age**2 + RuTD + RuFmb + TmRuYd + DefTO | factor(Tm) + factor(YR), data = stats)
+
+##### 2018 prediction scripts ###
+
+dfPass18 = read_excel('438p3data2018.xlsx', sheet = 'pass') %>%
+  separate(Player, sep = "\\\\", into = c('name', 'code')) %>%
+  select(-name) %>%
+  separate(QBrec, into = c('W', 'L', 'T')) %>%
+  select(c(code, Tm, Age, W, `NY/A`, `Cmp%` , `TD%` , `Int%`, YR, Pos)) %>%
+  filter(Pos == 'QB') %>%
+  select(-Pos) %>%
+  rename(Cmp = `Cmp%`, Yd = `NY/A`, TD = `TD%`, Int = `Int%`)
+
+dfRush18 = read_excel('438p3data2018.xlsx', sheet = 'rush') %>%
+  separate(Player, sep = "\\\\", into = c('name', 'code')) %>%
+  select(-name) %>%
+  select(c(code, Tm, Age, Att, TD, Fmb, Pos)) %>%
+  filter(Pos == 'QB') %>%
+  select(-Pos) %>%
+  transmute(code = code,
+            Tm = Tm,
+            RuTD = 100 * TD/Att,
+            RuFmb = 100 * Fmb/Att)
+
+stats18 = inner_join(dfPass18, dfRush18, by = c('code', 'Tm'))
+salary18 = read_excel('438p3data2018.xlsx', sheet = 'salary') %>%
+  separate(Player, sep = "\\\\", into = c('name', 'code')) %>%
+  select(-Pos)
+statsRev18 = inner_join(stats18, salary18, by = c('code', 'Tm'))
+
+######## bad revenue models
+# modelRev0 = plm(Rev ~ lag_wins + Pop + Ypc, model = 'pooling', data = dfRev)
+# vcov0 = vcovNW(modelRev0, type = "HC3", cluster = 'group')
+# se0 = sqrt(diag(vcov0))
+# 
+# modelRevT = plm(Rev ~ lag_wins + Pop + Ypc + time, model = 'pooling', data = dfRev)
+# vcovT = vcovNW(modelRevT, type = "HC3", cluster = 'group')
+# seT = sqrt(diag(vcovT))
+# 
+# modelRevAuto = plm(Rev ~ lag_wins + RevLag, model = 'pooling', data = dfRev)
+# vcovAuto = vcovNW(modelRevAuto, type = "HC3", cluster = "group")
+# seAuto = sqrt(diag(vcovAuto))
+########
+
+dfRev = read_excel('438p3rev.xlsx') %>%
+  mutate(Rev = log(rev17),
+         Pop = log(pop),
+         Ypc = log(ypc17m),
+         RevLag = log(lag_rev17))
+
+modelRevPct = plm(revPct ~ wins_t1 + Pop + Ypc, model = 'pooling', data = dfRev)
+vcovPct = vcovNW(modelRevPct, type = "HC3", cluster = 'group')
+sePct = sqrt(diag(vcovPct))
+
+modelRevAutoPct = plm(revPct ~ wins_t1 + RevPct_t1, model = 'pooling', data = dfRev)
+vcovAutoPct = vcovNW(modelRevAutoPct, type = "HC3", cluster = 'group')
+seAutoPct = sqrt(diag(vcovAutoPct))
+
+modelRev_doubleLag = plm(revPct ~ wins_t1 + wins_t2 + RevPct_t1, model = 'pooling', data = dfRev)
+vcovRev_doubleLag = vcovNW(modelRev_doubleLag, type = "HC3", cluster = 'group')
+sedoubleLag = sqrt(diag(vcovRev_doubleLag))
+
+statsRev18$WinsAdded = getWinsAdded(statsRev18, modelWinsTotal)
+statsRev18$RevAdded = sapply(statsRev18$WinsAdded, getRevAdded)
+
+isOutlier = function(sal, rev) {
+  sdRev = sd(dfPred$MRP)
+  if (rev - sal > 2*sdRev) return('underpaid')
+  else if (abs(rev - sal) < 2*sdRev) return('fairly paid')
+  else if (rev - sal < -2*sdRev) return('overpaid')
+}
+
+dfPred = statsRev18 %>%
+  select(c(name, Tm, Age, Sal, WinsAdded, RevAdded)) %>%
+  arrange(-RevAdded) %>%
+  rename(MRP = RevAdded) %>%
+  mutate(Salary = Sal / 10^6) %>%
+  select(-Sal)
+
+# dfPred$Wins15 = c(11, 11, 11, 8, 5, 4, 9, 5, 7, 11, 7, 9, 6, 6, 7, 6, 9, 8,
+#                   5, 5, 7, 7, 6, 7, 3, 5, 5, 4, 6, 3, 4, 3)
+
+dfPred$outlier = mapply(isOutlier, dfPred$Salary, dfPred$MRP)
+
+plot = ggplot(dfPred) +
+  geom_point(aes(x = Salary, y = MRP, color = outlier)) +
+  geom_abline(slope = 1, intercept = 0, color = 'grey50') +
+  ylim(0,15) + 
+  theme_minimal() +
+  ggtitle("Predicted MRP vs. Actual Salary of 2018 NFL Starting Quarterbacks")
+
+dfPredFinal = dfPred %>%
+  select(-c(outlier)) %>%
+  mutate(MRP = round(MRP, 2),
+         WinsAdded = round(WinsAdded, 2),
+         Salary = round(Salary, 2))
+
+stargazer(modelWinsTotal, modelWins0, modelWins1, modelWins2, 
+          header=FALSE, type='latex',
+          title = "Fixed-Effects Wins Model Estimation Results", 
+          font.size = 'small')
+
+stargazer(modelRevPct, modelRevAutoPct, modelRev_doubleLag,
+          header = FALSE, type = 'latex',
+          se = list(sePct, seAutoPct, sedoubleLag), 
+          title = "Revenue Autoregressive Model Estimation Results",
+          dep.var.labels = "RevPct", font.size = 'small',
+          notes = "Clustered standard errors, Newey-West estimator for
+          autocorrelation.")
+
+stargazer(dfPredFinal, summary = FALSE, header=FALSE, type='latex',
+          title = 'Predicted Marginal Revenue Products for 2018 Quarterbacks', 
+          font.size = 'small')
+
+plot = ggplot(dfPred) +
+  geom_point(aes(x = Salary, y = MRP, color = outlier)) +
+  geom_abline(slope = 1, intercept = 0, color = 'grey50') +
+  ylim(0,15) + 
+  theme_minimal() +
+  ggtitle("Predicted MRP vs. Actual Salary of 2018 NFL Starting Quarterbacks")
+
+plot
+
+```
+
+
+## Discussion
+
+### Wins Model - First Stage
+
+We begin by examining the fit and significance of each stage of the model. The first stage is a fixed-effects model, so the first set of coefficients should be interpreted as the average within-team effect of an additional percentage point in each quarterback performance statistic on the wins added by each quarterback. The coefficients on the non-QB team-level statistics indicate the average within-team effect of those statistics on total win share. First, we tested exogeneity and robustness by running several versions of the model with various non-QB statistics omitted. No QB performance statistics lose significance, nor do the values of the coefficients change significantly, when offensive, defensive, or both non-QB statistics are introduced to the model. This confirms that the statistics we have chosen to account for non-QB output are in fact exogenous to QB output, demonstrating the robustness of our prediction of quarterback wins added. Now, the full version of the wins model has $R^2 = 0.599$ (not surprisingly, this was the best fit of all four versions of the model), which implies a moderate effect size with good fit and predictive value. Still, though, about 40% of the variance in wins is unexplained by the model, but this is not completely surprising even with team and year-level fixed effects. While our fixed effects should control for unobserved differentials in team strength and playing style (through the team fixed effects) and strength-of-schedule differentials (through the year effects), the team fixed effects only pick up on time-invariant heterogeneity across teams. We did not have enough degrees of freedom to add team-year interacted fixed effects, so we hypothesize that most of the variance in wins unexplained by our model is due to time variance in the strength of unobserved non-QB performance. Even so, the effect size is certainly nontrivial and significant, so we go on to interpret the coefficients. \par
+
+First, the quarterback statistics most predictive of output are net yards per attempt, touchdowns per attempt, interceptions per attempt, and fumbles per attempt, with coefficients 0.727, 0.39, -0.748, and -0.044 respectively. These coefficients have expected sign and magnitude; net yards, interceptions and fumbles are significant at the 1% level or lower, while touchdowns is significant at 5%. The effects are deceivingly large, though: a one-percentage-point increase in interceptions per attempt takes a full three-quarters of a win away from a given team, while a one-percentage point increase in yards per attempt adds almost three-quarters of a win. This could be a function of the relatively low league variance in these statistics, but the effect is nonetheless striking. Interestingly, completion percentage, an often-referenced metric of quarterback efficiency, was not significant in any case, and contrary to the expected results from previous literature, we observe a positive quadratic dependence of output on age. We hypothesize that the success of rookie quarterbacks in recent years, as well as the ascendancy of quarterbacks like Tom Brady and Peyton Manning, both at the end of their careers, muted the expected negative quadratic effect on age. However, the age effect was small, and it was not significant. \par
+
+In terms of non-QB sources of wins added, both offensive and defensive measures were significant: team rush yards had an effect size of 0.001 and was significant at 5%, while defensive turnovers had an effect size about 10 times larger, at 0.155, significant at 1%. This confirms that there are team performance measures exogenous to the quarterback that contribute to output, but the effect size is not large. On offense, teams need to add about 1000 rush yards to produce one win, while just a few additional net yards per attempt by a quarterback would have the same effect. On defense, the effect is much larger -- a possible confirmation of the traditional “defense wins championships” mantra -- as only about 6.5 additional defensive turnovers over a full season produce one additional win. Keeping in mind these non-QB effects, we can isolate the marginal product of the quarterback as described previously, having confirmed the fit, robustness, and significance of the first stage of our model. \par
+
+### Revenue Model - Second Stage
+
+We now interpret the revenue autoregressive model to isolate the marginal revenue of a win added. To confirm robustness, we ran several versions of the revenue model, the first without an autoregressive term, instead adding variables controlling for population and income per capita at the team-MSA level. While the effect of lagged wins is significant at 5% in the basic model and population is significant at 1%, the fit is weak, with $R^2 = 0.131$. This means that almost 90% of the time variance in revenue is not explained by time trends in wins, population, and income, necessitating the use of an autoregressive approach. Fit improved dramatically when we added the autoregressive term in model (2): with only one lag on wins and one lag on revenue, both lags are significant at the 1%, and the model has $R^2 = 0.935$, indicating excellent fit. We hypothesized that adding a two-year lag on wins would further improve fit, but the $R^2$ value for the full model with a one-year lag on revenue and two lags on wins was exactly the same as for model (2). It appears that two-year lagged wins were endogenous to one-year lagged wins, as adding the second lag took some significance away from the first lag on wins, but given the theory we set out above, we choose to include both lags and continue with model (3). \par
+
+Not surprisingly, the autoregressive term is significant at 1% with a large effect size, indicating significant year-on-year carryover of team revenue and confirming our theory that fan bases are "sticky" -- a single year's output does not determine revenue completely, as fans consider past years’ success in making decisions to buy tickets and merchandise. We demonstrated above that the marginal revenue $MR = \frac{\partial RevPct}{\partial W} = \delta_1$ is simply the coefficient on past-season wins, so we find that the marginal revenue of an NFL win is $\delta_1 = 0.008\%$ of the sum of teams' individual revenues in a given year. Note that this is not the same as the league’s total revenue, as it doesn't include TV deals or league-wide sponsorships, etc. For context, this team-total revenue was \$12.08 billion in 2017, so the marginal revenue of a win in 2017 was \$966,240. The coefficient on past-season wins was significant at 5%, and while the effect size seems small by the coefficient, it clearly is not a trivial effect in dollar terms. Therefore, we have confirmed the fit and predictive value of the revenue autoregressive model -- we can be confident in our prediction of the marginal revenue of a win, as well as in our theory that fan base stickiness plays a large role in determining yearly team revenue.
+
+### Prediction
+
+Having interpreted and validated the two stages of our model, we now move on to prediction and investigation of the current NFL quarterback labor market. The 2018 NFL season has completed 14 of 17 regular-season weeks, and complete statistical data is available for prediction. To predict team-total revenue in 2018, we find the geometric mean revenue growth rate over the past four years and extrapolate forward to 2018, arriving at a team-total revenue of \$13.09 billion and a 2018 marginal revenue of $\delta_1^{2018}$ = \$1.047 million. Assuming each quarterback continues playing at his current pace for the rest of the season, we generate the marginal product $MP = \beta \cdot \bf{QB_i}$ of each quarterback based on his performance through 14 weeks, then multiply this value by the 2018 marginal revenue to find the marginal revenue product of each quarterback, which can then be compared to each quarterback’s 2018 salary. Interestingly, our model predicts that a nontrivial number of NFL quarterbacks are underpaid compared to the revenue they generate from their share of output, the most underpaid being highly successful rookies on league-minimum contracts such as Patrick Mahomes of Kansas City. Mahomes is compensated at the rookie-standard \$560,000 in 2018, but his marginal revenue product is more than 10 times that, at $12.7 million, as his exceptional performance in his first year in the league drives ticket sales, stadium attendance, concessions, jersey sales, website traffic, and advertising and sponsorship interest for Kansas City. \par
+
+To better visualize the differential between predicted marginal revenue products and salaries, we examine the scatter plot of predicted MRP vs. real 2018 salary. Noting that the standard deviation of predicted MRP is about \$1.95 million, we classify quarterbacks as “overpaid” if their salary is more than two standard deviations above their MRP; “fairly paid” if their salary is within two standard deviations in either direction; and “underpaid” if their salary is more than two standard deviations below their predicted MRP. Points are colored accordingly. The scatterplot shows a large cluster of underpaid quarterbacks -- accounting for almost half the league -- responsible for between \$5 million and \$12 million in MRP, but getting paid only around \$1 million. Looking closely at the data, though, most of these quarterbacks are highly successful rookies or second-year players – such as Mahomes, Deshaun Watson of Houston, and Baker Mayfield of Cleveland – producing wins for their team on a rookie-minimum contract. The data therefore suggest an “inverse quarterback premium” for rookies, which is not totally unexpected: lack of a proven track record in the NFL creates an asymmetric information problem in which teams take on risk by drafting and starting rookie quarterbacks. This market is clearly not perfectly competitive given the asymmetric information, and the risk inherent in rookies would be expected to depress salaries, so this cluster of unpaid rookie quarterbacks does not by itself prove anything about the NFL labor market. About a third of quarterbacks are “fairly paid” by our predictions, with real salaries within two standard deviations of predicted MRP, while several are overpaid as well. The largest outlier is Kirk Cousins of Minnesota, who recently signed a “superstar” contract worth \$22.5 million per year after a free agency bidding war, but is producing only about $10 million in predicted output. \par
+
+Clearly, NFL quarterbacks are not compensated exactly at their marginal revenue products, as there is a fair amount of dispersion in the scatterplot. However, discounting the imperfect information depressing rookie quarterbacks’ salaries (which would be expected even in a market equilibrium), there seems to be a reasonable distribution around the 45-degree line representing equality of predicted MRP and salary, with no significant bias in either direction. This is somewhat surprising given the market conditions of the NFL: the league imposes several decidedly monopolistic policies such as the per-team salary cap, which restricts player salaries to the benefit of team owners (or theoretically to prevent a salary arms-race). It would be entirely plausible that salaries are artificially depressed as teams try to fit within the cap, and that the league takes advantage of its quarterbacks in a monopsony-like labor market where quarterbacks’ marginal revenue product is much higher than their wage. Since the NFL has exclusive buying power in the labor market for quarterbacks, teams, in cooperation with the league, could conceivably set quarterback salary ranges without regard to the free-market principle that workers are efficiently compensated equally to their marginal revenue product. The data, though, do not show this to be the case for the majority of the league, suggesting efficiency in the labor market for quarterbacks as contracts expire and teams offer free-agent quarterbacks salaries relatively consistent with their predicted marginal revenue products. 
+
+This is not to say there are no inefficiencies in the market. "Superstar" ontracts, such as that of Cousins, produce overpaid outliers as a result of a free-agency “bidding war” between teams -- in fact, Cousins’ contract is currently the highest in NFL history due to this effect. In these cases -- recently, Cousins, and also Baltimore’s Joe Flacco after his historic Super Bowl win -- the “quarterback premium” effect is real. But this effect is not consistent across the league, and only influences salaries for a small number of free-agent quarterbacks every season. Our model suggests that the reason why quarterbacks are consistently the highest-paid players on NFL teams is because they produce more wins than non-quarterbacks. Returning to our theory, the marginal revenue product of the quarterback is in general much higher than that of a running back or a defensive player, so as a result of the equilibrium condition $MRP = w$ market forces drive quarterback salaries higher than those of other players. 
+
+Our work therefore confirms the results of previous literature that estimated the win share of the quarterback as the highest on the average NFL team and deemed the quarterback the least-replaceable player on the field. These results do not seem revolutionary, though the insights gained here are relatively powerful. It appears that the NFL’s labor market is in fact near a competitive equilibrium, with the only significant distortionary effects in 2018 seen in one “superstar” contract and a cluster of underpaid rookies resulting from expected levels of risk aversion by NFL teams. While the NFL labor market is clearly not perfectly competitive (as quarterbacks are heterogeneous, imperfect information exists, and teams have outsize buying power), our work demonstrates that the market for quarterbacks has reached a near-equilibrium state in spite of several distortionary pressures that could have systematically caused salaries to deviate from predicted marginal revenue products. 
+
+## Conclusion
+
+We set out to model the labor market for NFL quarterbacks in two stages, estimating the two-factor production function of the NFL team and subsequently modeling the revenue of the team as a function of output. Under the free-market assumption that the equilibrium wage is equal to the marginal revenue product, we would expect that NFL quarterback salaries be about equal to their predicted marginal revenue product based on the number of wins they generate per year. We successfully modeled the team production function via the first stage of our model, and arrived at a reasonable autoregressive revenue function in the second stage. Both stages of our model displayed good fit and high significance on the desired marginal effects, and we proceeded to test the two-stage model’s predictive value on 2018 data. While one incomplete season is a small sample size from which to draw any robust conclusions, it appears that the NFL labor market is near a competitive equilibrium, with no systemic bias in quarterback salaries besides the opposing effects of imperfect information and free-agency bidding wars on small sections of the league. Therefore, our work shows that the “quarterback premium” only exists because the market says it should -- in other words, the fact that quarterbacks are the highest-paid players on most teams and represent 4 of the top 10 NFL salaries out of a possible 22 positions does not represent an inefficiency in the NFL labor market, but rather reflects an efficient competitive equilibrium given the large share of output for which the quarterback is responsible. Future work could apply this two-stage framework to more NFL seasons in order to generate a larger sample size; to other NFL positions; as well as to other sports, as a novel means of investigating the labor markets of various positions and large-market sports leagues. Given our data, it appears that the invisible hand of the market reaches all the way into the NFL – it would be interesting to see whether this holds true for other leagues as well.
+
